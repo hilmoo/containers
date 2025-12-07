@@ -1,0 +1,18 @@
+name: schedule
+
+on:
+  schedule:
+  - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  schedule:
+    name: schedule
+    strategy:
+      matrix:
+        image_name:
+        - auto-download-mmdb
+    uses: ./.github/workflows/build.yaml
+    with:
+      image_name: ${{ matrix.image_name }}
+      image_tag: latest

@@ -1,0 +1,1 @@
+auto download https://github.com/P3TERX/GeoLite.mmdb/releases/latest
