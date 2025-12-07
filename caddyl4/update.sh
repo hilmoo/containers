@@ -21,7 +21,7 @@ PACKAGE_VERSION=$(curl -s \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GITHUB_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  https://api.github.com/users/hilmoo/packages/container/containers%2Fcaddyl4/versions | jq -r '[.[] | select(.metadata.container.tags | length > 0)] | .[0].metadata.container.tags[0]')
+  https://api.github.com/users/hilmoo/packages/container/containers%2Fcaddyl4/versions | jq -r 'if type == "array" then [.[] | select(.metadata.container.tags | length > 0)] | .[0].metadata.container.tags[0] else empty end')
 
 if [ -z "$PACKAGE_VERSION" ] || [ "$PACKAGE_VERSION" = "null" ]; then
   echo "Failed to fetch package version. Using 0.0.0 as starting version."
