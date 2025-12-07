@@ -8,8 +8,7 @@ MMDB_FILE="${GEOIP_DIR}/GeoLite2-City.mmdb"
 mkdir -p "$GEOIP_DIR"
 
 echo "Fetching latest digest..."
-LATEST_DIGEST=$(curl -s https://api.github.com/repos/P3TERX/GeoLite.mmdb/releases/latest \
-| jq -r '.assets[] | select(.name=="GeoLite2-City.mmdb") | .digest')
+LATEST_DIGEST=$(curl -s https://api.github.com/repos/P3TERX/GeoLite.mmdb/releases/latest | jq -r '.assets[] | select(.name=="GeoLite2-City.mmdb") | .digest')
 
 echo "Latest digest: $LATEST_DIGEST"
 
