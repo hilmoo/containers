@@ -1,4 +1,4 @@
-name: z_caddy-l4
+name: z_my-caddy
 
 on:
   schedule:
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: run z_caddy-l4 update script
+      - name: run z_my-caddy update script
         id: check-updates
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
