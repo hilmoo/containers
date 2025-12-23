@@ -1,0 +1,57 @@
+name: z_caddy-l4
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  check-updates:
+    name: check-updates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+      id-token: write
+    outputs:
+      new_version: ${{ steps.check-updates.outputs.new_version }}
+      updates_detected: ${{ steps.check-updates.outputs.updates_detected }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: run z_caddy-l4 update script
+        id: check-updates
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd caddyl4
+          chmod +x ./update.sh
+          if ./update.sh; then
+            echo "updates_detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "updates_detected=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+      - name: Commit and push changes
+        if: steps.check-updates.outputs.updates_detected == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "Bump caddyl4 to ${{ steps.check-updates.outputs.new_version }}"
+          branch: main
+          file_pattern: "caddyl4/*"
+
+  build:
+    name: build
+    needs: check-updates
+    if: needs.check-updates.outputs.updates_detected == 'true'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build.yaml
+    with:
+      image_name: caddyl4
+      image_tag: ${{ needs.check-updates.outputs.new_version }}
