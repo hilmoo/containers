@@ -43,7 +43,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
           tags: |
-            type=raw,value=${{ inputs.image_tag }}
+            type=raw,value=${{ (startsWith(inputs.image_tag, 'v') || inputs.image_tag == 'latest') && inputs.image_tag || format('v{0}', inputs.image_tag) }}
             type=raw,value=latest,enable=${{ inputs.image_tag != 'latest' }}
 
       - name: Log in to the Container registry
