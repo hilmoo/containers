@@ -19,7 +19,7 @@ function backup_db_sqlite() {
 function backup_rest_of_data() {
     color blue "backup vaultwarden data directory"
 
-    rsync -a --exclude 'db.sqlite3 ' "${TARGET_DIR}/" "${BACKUP_DIR}/"
+    rsync -a --exclude='db.sqlite3*' "${TARGET_DIR}/" "${BACKUP_DIR}/"
 }
 
 backup_db_sqlite
