@@ -4,6 +4,7 @@ TARGET_DIR="/target"
 DB_FILE="${TARGET_DIR}/db.sqlite3"
 
 BACKUP_DIR="/backup"
+mkdir -p "${BACKUP_DIR}"
 BACKUP_FILE_DB_SQLITE="${BACKUP_DIR}/db.sqlite3.bak"
 
 function backup_db_sqlite() {
