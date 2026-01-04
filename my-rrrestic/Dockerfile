@@ -1,4 +1,4 @@
-FROM ghcr.io/hilmoo/rrrestic:v0.3.0
+FROM ghcr.io/hilmoo/rrrestic:v0.3.1
 
 RUN apk add --no-cache sqlite rsync
 
