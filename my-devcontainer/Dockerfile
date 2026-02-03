@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/base:2.1.6-debian13
 
-ARG NIX_VERSION=2.31.3
-ARG DEVBOX_VERSION=0.16.0
+ARG NIX_VERSION=2.31.3 \
+    DEVBOX_VERSION=0.16.0
 
 LABEL devbox.version=${DEVBOX_VERSION} \
     nix.version=${NIX_VERSION}
@@ -23,6 +23,6 @@ RUN . /home/vscode/.nix-profile/etc/profile.d/nix.sh && \
     nix-channel --update
 
 # Install devbox
-RUN nix profile install github:jetify-com/devbox/0.16.0 \
+RUN nix profile install github:jetify-com/devbox/${DEVBOX_VERSION} \
     --extra-experimental-features flakes \
     --extra-experimental-features nix-command
