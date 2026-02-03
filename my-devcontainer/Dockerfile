@@ -24,4 +24,9 @@ RUN nix profile add github:jetify-com/devbox/${DEVBOX_VERSION} \
     --extra-experimental-features flakes \
     --extra-experimental-features nix-command
 
+COPY --chown=vscode:vscode devbox.json /home/vscode/.local/share/devbox/global/default/devbox.json
+
+RUN devbox global install
+RUN echo 'eval "$(devbox global shellenv)"' >> ~/.bashrc
+
 RUN nix-store --gc && nix-store --optimise
