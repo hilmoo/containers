@@ -62,6 +62,7 @@ jobs:
           fi
 
           echo "Fetching versions for package: $PACKAGE_NAME owned by $OWNER"
+          echo ""https://api.github.com/users/hilmoo/packages/container/containers%2F$PACKAGE_NAME/versions""
 
           PACKAGE_VERSION=$(curl -s \
             -H "Accept: application/vnd.github+json" \
