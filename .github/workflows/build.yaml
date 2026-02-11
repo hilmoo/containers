@@ -51,7 +51,7 @@ jobs:
         id: tag
         shell: bash
         env:
-          IMAGE: ${{ github.repository }}/${{ inputs.image_name }}
+          IMAGE: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
