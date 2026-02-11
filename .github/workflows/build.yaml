@@ -52,8 +52,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OWNER: ${{ github.repository_owner }}
-          PACKAGE_NAME: containers/${{ inputs.image_name }}
+          PACKAGE_NAME: ${{ inputs.image_name }}
         run: |
           set -e
 
@@ -64,30 +63,31 @@ jobs:
 
           echo "Fetching versions for package: $PACKAGE_NAME owned by $OWNER"
 
-          RESPONSE=$(curl -s \
+          PACKAGE_VERSION=$(curl -s \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/users/$OWNER/packages/container/$PACKAGE_NAME/versions")
+            "https://api.github.com/users/hilmoo/packages/container/containers%2F$PACKAGE_NAME/versions" \
+            | jq -r '
+                if type=="array" then
+                  (
+                    [.[0].metadata.container.tags[]? | select(. != "latest")]
+                    + [.[].metadata.container.tags[]? | select(. != "latest")]
+                  ) | .[0]
+                else
+                  empty
+                end
+              ')
 
-          TAGS=$(echo "$RESPONSE" | jq -r '
-            if type=="array" then
-              [.[].metadata.container.tags[]? | select(. != "latest")] | join("\n")
-            else
-              empty
-            end
-          ')
-
-          if [ -z "$TAGS" ] || [ "$TAGS" = "null" ]; then
+          if [ -z "$PACKAGE_VERSION" ] || [ "$PACKAGE_VERSION" = "null" ]; then
             echo "No existing tags found. Defaulting to v0.0.0"
             latest="v0.0.0"
           else
-            latest=$(echo "$TAGS" | sort -V | tail -n 1)
+            latest=$(echo "$PACKAGE_VERSION" | sort -V | tail -n 1)
             echo "Latest version found: $latest"
           fi
 
-          version=${latest#v}
-          IFS='.' read -r major minor patch <<< "$version"
+          IFS='.' read -r major minor patch <<< "$PACKAGE_VERSION"
 
           major=${major:-0}; minor=${minor:-0}; patch=${patch:-0}
 
