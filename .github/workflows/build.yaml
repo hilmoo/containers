@@ -62,7 +62,6 @@ jobs:
           fi
 
           echo "Fetching versions for package: $PACKAGE_NAME owned by $OWNER"
-          echo ""https://api.github.com/users/hilmoo/packages/container/containers%2F$PACKAGE_NAME/versions""
 
           PACKAGE_VERSION=$(curl -s \
             -H "Accept: application/vnd.github+json" \
@@ -99,7 +98,7 @@ jobs:
             *) echo "Error: Invalid version_bump input: ${{ inputs.version_bump }}"; exit 1 ;;
           esac
 
-          next="v$major.$minor.$patch"
+          next="$major.$minor.$patch"
 
           echo "Resolved tag: $next"
           echo "tag=$next" >> "$GITHUB_OUTPUT"
