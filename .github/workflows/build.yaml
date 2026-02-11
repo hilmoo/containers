@@ -62,13 +62,12 @@ jobs:
           fi
 
           response=$(curl -s -w "\n%{http_code}" -H "Authorization: Bearer $GH_TOKEN" \
-            "https://ghcr.io/v2/$MAG/tags/list")
+            "https://ghcr.io/v2/$IMAGE/tags/list")
 
           http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | head -n -1)
 
           if [ "$http_code" != "200" ]; then
-            echo "Warning: API returned $http_code. Body: $body"
+            echo "Warning: API returned $http_code
             latest="v0.0.0"
           else
             latest=$(echo "$body" | jq -r '.tags[]' 2>/dev/null | sort -V | tail -n 1)
