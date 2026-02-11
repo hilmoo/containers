@@ -12,6 +12,12 @@ on:
         default: latest
         required: true
         type: string
+      version_bump:
+        description: Version bump type (major, minor, patch, none)
+        required: false
+        default: none
+        type: string
+
   workflow_dispatch:
     inputs:
       image_name:
@@ -21,6 +27,10 @@ on:
         description: Tag of the image to build
         default: latest
         required: true
+      version_bump:
+        description: Version bump type (major, minor, patch, none)
+        required: false
+        default: none
 
 jobs:
   build:
@@ -36,6 +46,62 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Resolve image tag
+        id: tag
+        shell: bash
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+
+          if [[ "${{ inputs.version_bump }}" == "none" ]]; then
+            echo "Using provided image_tag: ${{ inputs.image_tag }}"
+            echo "tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "version_bump=${{ inputs.version_bump }} → ignoring image_tag"
+
+          tags=$(curl -s \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            https://ghcr.io/v2/${IMAGE#ghcr.io/}/tags/list \
+            | jq -r '.tags[]' || true)
+
+          latest=$(echo "$tags" \
+            | grep '^v[0-9]\+\.[0-9]\+\.[0-9]\+$' \
+            | sort -V \
+            | tail -n 1)
+
+          latest=${latest:-v0.0.0}
+          echo "Latest version: $latest"
+
+          version=${latest#v}
+          IFS='.' read -r major minor patch <<< "$version"
+
+          case "${{ inputs.version_bump }}" in
+            major)
+              major=$((major+1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor+1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch+1))
+              ;;
+            *)
+              echo "Invalid version_bump"
+              exit 1
+              ;;
+          esac
+
+          next="v$major.$minor.$patch"
+          echo "Resolved tag: $next"
+          echo "tag=$next" >> "$GITHUB_OUTPUT"
 
       - name: Extract metadata
         id: meta
