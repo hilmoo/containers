@@ -51,45 +51,36 @@ jobs:
         id: tag
         shell: bash
         env:
-          IMAGE: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
+          IMAGE: ${{ github.repository }}/${{ inputs.image_name }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
 
           if [[ "${{ inputs.version_bump }}" == "none" ]]; then
-            echo "Using provided image_tag: ${{ inputs.image_tag }}"
             echo "tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          echo "version_bump=${{ inputs.version_bump }} → ignoring image_tag"
+          tags_json=$(curl -s -H "Authorization: Bearer $GH_TOKEN" "https://ghcr.io/v2/$MAG/tags/list")
 
-          tags=$(curl -s -H "Authorization: Bearer $GH_TOKEN" "https://ghcr.io/v2/${IMAGE#ghcr.io/}/tags/list")
-          latest=$(echo "$tags" | jq -r '.tags[]' | sort -V | tail -n 1)
+          latest=$(echo "$tags_json" | jq -r '.tags[]' 2>/dev/null | sort -V | tail -n 1 || echo "")
 
-          latest=${latest:-v0.0.0}
-          echo "Latest version: $latest"
+          if [[ -z "$latest" || "$latest" == "null" ]]; then
+            latest="v0.0.0"
+          fi
+
+          echo "Latest version found: $latest"
 
           version=${latest#v}
           IFS='.' read -r major minor patch <<< "$version"
 
+          major=${major:-0}; minor=${minor:-0}; patch=${patch:-0}
+
           case "${{ inputs.version_bump }}" in
-            major)
-              major=$((major+1))
-              minor=0
-              patch=0
-              ;;
-            minor)
-              minor=$((minor+1))
-              patch=0
-              ;;
-            patch)
-              patch=$((patch+1))
-              ;;
-            *)
-              echo "Invalid version_bump"
-              exit 1
-              ;;
+            major) major=$((major+1)); minor=0; patch=0 ;;
+            minor) minor=$((minor+1)); patch=0 ;;
+            patch) patch=$((patch+1)) ;;
+            *) echo "Invalid version_bump"; exit 1 ;;
           esac
 
           next="v$major.$minor.$patch"
@@ -102,8 +93,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
           tags: |
-            type=raw,value=${{ (startsWith(inputs.image_tag, 'v') || inputs.image_tag == 'latest') && inputs.image_tag || format('v{0}', inputs.image_tag) }}
-            type=raw,value=latest,enable=${{ inputs.image_tag != 'latest' }}
+            type=raw,value=${{ steps.tag.outputs.tag }}
+            type=raw,value=latest,enable=${{ steps.tag.outputs.tag != 'latest' }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
