@@ -6,6 +6,10 @@ ARG NIX_VERSION=2.33.2 \
 LABEL devbox.version=${DEVBOX_VERSION} \
     nix.version=${NIX_VERSION}
 
+# Fix Nix seccomp BPF error under QEMU for multi-arch builds
+RUN mkdir -p /etc/nix && \
+    printf "filter-syscalls = false" > /etc/nix/nix.conf
+
 # Install nix
 RUN mkdir -m 0755 /nix && chown vscode:vscode /nix
 
