@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/base:2.1.9-debian13
+FROM mcr.microsoft.com/devcontainers/base:2.1.11-debian13
 
 ARG NIX_VERSION=2.33.2 \
     DEVBOX_VERSION=0.16.0
