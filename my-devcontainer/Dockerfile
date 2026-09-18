@@ -1,7 +1,9 @@
 FROM mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 
-ARG NIX_VERSION=2.35.2 \
-    DEVBOX_VERSION=0.18.3
+# renovate: datasource=github-releases depName=NixOS/nix
+ARG NIX_VERSION=2.35.2
+# renovate: datasource=github-releases depName=jetify-com/devbox
+ARG DEVBOX_VERSION=0.18.3
 
 LABEL devbox.version=${DEVBOX_VERSION} \
     nix.version=${NIX_VERSION}

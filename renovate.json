@@ -12,5 +12,23 @@
         "helpers:githubDigestChangelogs",
         "helpers:goXPackagesChangelogLink",
         "helpers:goXPackagesNameLink"
+    ],
+    "customManagers": [
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+            "matchStrings": [
+                "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\s+ARG \\w+_VERSION=\"?(?<currentValue>[^\\s\"]+)\"?"
+            ]
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/(^|/)devbox\\.json$/"],
+            "matchStrings": [
+                "\"\\$schema\":\\s*\"https://raw\\.githubusercontent\\.com/jetify-com/devbox/(?<currentValue>[^/]+)/\\.schema/devbox\\.schema\\.json\""
+            ],
+            "datasourceTemplate": "github-releases",
+            "depNameTemplate": "jetify-com/devbox"
+        }
     ]
 }
