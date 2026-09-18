@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 
-ARG NIX_VERSION=2.33.2 \
-    DEVBOX_VERSION=0.16.0
+ARG NIX_VERSION=2.35.2 \
+    DEVBOX_VERSION=0.18.3
 
 LABEL devbox.version=${DEVBOX_VERSION} \
     nix.version=${NIX_VERSION}
