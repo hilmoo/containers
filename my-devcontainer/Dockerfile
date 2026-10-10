@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/base:2.2.1-debian13
+FROM mcr.microsoft.com/devcontainers/base:2.2.3-debian13
 
 # renovate: datasource=github-releases depName=NixOS/nix
 ARG NIX_VERSION=2.35.2
