@@ -4,42 +4,13 @@ on:
   workflow_call:
     inputs:
       image_name:
-        description: Name of the image to build
+        description: Folder name of the image to build
         required: true
         type: string
-      image_tag:
-        description: Tag of the image to build
-        default: latest
-        required: true
-        type: string
-      version_bump:
-        description: Version bump type (major, minor, patch, none)
+      push:
+        description: Push the image to the registry (false = build only)
         required: false
-        default: none
-        type: string
-      multiarch:
-        description: Build multi-architecture image (linux/amd64, linux/arm64)
-        required: false
-        default: false
-        type: boolean
-
-  workflow_dispatch:
-    inputs:
-      image_name:
-        description: Name of the image to build
-        required: true
-      image_tag:
-        description: Tag of the image to build
-        default: latest
-        required: true
-      version_bump:
-        description: Version bump type (major, minor, patch, none)
-        required: false
-        default: none
-      multiarch:
-        description: Build multi-architecture image (linux/amd64, linux/arm64)
-        required: false
-        default: false
+        default: true
         type: boolean
 
 jobs:
@@ -49,7 +20,9 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
+    concurrency:
+      group: build-${{ inputs.image_name }}-${{ inputs.push }}
+      cancel-in-progress: false
 
     env:
       REGISTRY: ghcr.io
@@ -58,80 +31,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Read image config
+        id: cfg
+        run: |
+          echo "multiarch=$(jq -r --arg i '${{ inputs.image_name }}' '.[$i].multiarch // false' .github/images.json)" >> "$GITHUB_OUTPUT"
+
       - name: Set up QEMU
-        if: ${{ inputs.multiarch }}
+        if: steps.cfg.outputs.multiarch == 'true'
         uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        if: ${{ inputs.multiarch }}
         uses: docker/setup-buildx-action@v4
 
-      - name: Resolve image tag
+      - name: Resolve image tags
         id: tag
-        shell: bash
+        if: inputs.push
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGE_NAME: ${{ inputs.image_name }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
         run: |
-          set -e
-
-          if [[ "${{ inputs.version_bump }}" == "none" ]]; then
-            echo "tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "Fetching versions for package: $PACKAGE_NAME owned by $OWNER"
-
-          PACKAGE_VERSION=$(curl -s \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/users/hilmoo/packages/container/containers%2F$PACKAGE_NAME/versions" \
-            | jq -r '
-                if type=="array" then
-                  (
-                    [.[0].metadata.container.tags[]? | select(. != "latest")]
-                    + [.[].metadata.container.tags[]? | select(. != "latest")]
-                  ) | .[0]
-                else
-                  empty
-                end
-              ')
-
-          if [ -z "$PACKAGE_VERSION" ] || [ "$PACKAGE_VERSION" = "null" ]; then
-            echo "No existing tags found. Defaulting to v0.0.0"
-            latest="v0.0.0"
-          else
-            latest=$(echo "$PACKAGE_VERSION" | sort -V | tail -n 1)
-            echo "Latest version found: $latest"
-          fi
-
-          IFS='.' read -r major minor patch <<< "$PACKAGE_VERSION"
-
-          major=${major:-0}; minor=${minor:-0}; patch=${patch:-0}
-
-          case "${{ inputs.version_bump }}" in
-            major) major=$((major+1)); minor=0; patch=0 ;;
-            minor) minor=$((minor+1)); patch=0 ;;
-            patch) patch=$((patch+1)) ;;
-            *) echo "Error: Invalid version_bump input: ${{ inputs.version_bump }}"; exit 1 ;;
-          esac
-
-          next="$major.$minor.$patch"
-
-          echo "Resolved tag: $next"
-          echo "tag=$next" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            bash .github/scripts/resolve-tag.sh "${{ inputs.image_name }}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
-          tags: |
-            type=raw,value=${{ steps.tag.outputs.tag }}
-            type=raw,value=latest,enable=${{ steps.tag.outputs.tag != 'latest' }}
+          tags: ${{ inputs.push && steps.tag.outputs.tags || 'type=raw,value=test' }}
 
       - name: Log in to the Container registry
+        if: inputs.push
         uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
@@ -139,10 +73,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
-        id: push
         uses: docker/build-push-action@v7
         with:
           context: ./${{ inputs.image_name }}
-          push: true
-          platforms: ${{ inputs.multiarch && 'linux/amd64,linux/arm64' || '' }}
+          push: ${{ inputs.push }}
+          platforms: ${{ steps.cfg.outputs.multiarch == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ inputs.image_name }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}

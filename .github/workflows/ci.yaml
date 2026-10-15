@@ -1,0 +1,69 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # weekly refresh of images that track an unpinned base (e.g. alpine:latest)
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Image folder to build and push, or "all"
+        required: true
+        default: all
+
+jobs:
+  detect:
+    name: detect
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      images: ${{ steps.detect.outputs.images }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect images to build
+        id: detect
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          INPUT_IMAGE: ${{ inputs.image }}
+        run: |
+          images=$(bash .github/scripts/detect-images.sh)
+          echo "Images: $images"
+          echo "images=$images" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: build (${{ matrix.image_name }})
+    needs: detect
+    if: needs.detect.outputs.images != '[]'
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image_name: ${{ fromJSON(needs.detect.outputs.images) }}
+    uses: ./.github/workflows/build.yaml
+    with:
+      image_name: ${{ matrix.image_name }}
+      # pull requests only verify that the image builds
+      push: ${{ github.event_name != 'pull_request' }}
+
+  # single stable check name to require in branch protection / rulesets
+  ci-ok:
+    name: ci-ok
+    needs: [detect, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

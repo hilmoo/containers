@@ -1,4 +1,7 @@
-FROM ghcr.io/hilmoo/rrrestic:v0.3.1
+# renovate: datasource=docker depName=ghcr.io/hilmoo/rrrestic
+ARG RRRESTIC_VERSION=v0.3.1
+
+FROM ghcr.io/hilmoo/rrrestic:${RRRESTIC_VERSION}
 
 RUN apk add --no-cache sqlite rsync
 

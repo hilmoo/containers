@@ -9,11 +9,34 @@
         "mergeConfidence:age-confidence-badges",
         "replacements:all",
         "workarounds:all",
+        "helpers:pinGitHubActionDigests",
         "helpers:githubDigestChangelogs",
         "helpers:goXPackagesChangelogLink",
         "helpers:goXPackagesNameLink"
     ],
+    "packageRules": [
+        {
+            "description": "Auto-merge non-major updates once required checks pass",
+            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+            "automerge": true,
+            "platformAutomerge": true
+        },
+        {
+            "description": "Majors need a human",
+            "matchUpdateTypes": ["major"],
+            "automerge": false,
+            "addLabels": ["major"]
+        }
+    ],
     "customManagers": [
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+            "matchStrings": [
+                "# renovate-git: depName=(?<depName>\\S+) branch=(?<currentValue>\\S+)\\s+ARG \\w+_COMMIT=\"?(?<currentDigest>[a-f0-9]{40})\"?"
+            ],
+            "datasourceTemplate": "git-refs"
+        },
         {
             "customType": "regex",
             "managerFilePatterns": ["/(^|/)Dockerfile$/"],

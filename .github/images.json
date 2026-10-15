@@ -1,0 +1,8 @@
+{
+  "auto-download-mmdb": { "tag": "latest", "schedule": true },
+  "caddyl4": { "tag": "version" },
+  "my-caddy": { "tag": "version" },
+  "my-devcontainer": { "tag": "date", "multiarch": true },
+  "my-rrrestic": { "tag": "version" },
+  "wait-for-pg": { "tag": "latest", "schedule": true }
+}
