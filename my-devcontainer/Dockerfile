@@ -6,7 +6,8 @@ ARG NIX_VERSION=2.35.2
 ARG DEVBOX_VERSION=0.18.4
 
 LABEL devbox.version=${DEVBOX_VERSION} \
-    nix.version=${NIX_VERSION}
+    nix.version=${NIX_VERSION} \
+    org.opencontainers.image.description="Devcontainer with Nix ${NIX_VERSION} and Devbox ${DEVBOX_VERSION}"
 
 # Fix Nix seccomp BPF error under QEMU for multi-arch builds
 RUN mkdir -p /etc/nix && \

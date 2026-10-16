@@ -9,4 +9,8 @@ RUN xcaddy build \
 
 FROM caddy:${CADDY_VERSION}-alpine
 
+ARG CADDY_VERSION
+LABEL caddy.version=${CADDY_VERSION} \
+    org.opencontainers.image.description="Caddy ${CADDY_VERSION} with caddy-ip-list and caddy-dynamic-remoteip"
+
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy

@@ -64,6 +64,17 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}
           tags: ${{ inputs.push && steps.tag.outputs.tags || 'type=raw,value=test' }}
 
+      - name: Keep Dockerfile description label
+        id: labels
+        env:
+          LABELS: ${{ steps.meta.outputs.labels }}
+        run: |
+          {
+            echo "labels<<EOF"
+            grep -v '^org.opencontainers.image.description=' <<< "$LABELS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Log in to the Container registry
         if: inputs.push
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
@@ -79,6 +90,7 @@ jobs:
           push: ${{ inputs.push }}
           platforms: ${{ steps.cfg.outputs.multiarch == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          # Drop the repo-level description so the Dockerfile's own LABEL wins
+          labels: ${{ steps.labels.outputs.labels }}
           cache-from: type=gha,scope=${{ inputs.image_name }}
           cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}

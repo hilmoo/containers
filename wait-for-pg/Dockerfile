@@ -2,6 +2,9 @@ FROM alpine:latest AS builder
 RUN apk add --no-cache postgresql-client
 
 FROM alpine:latest
+
+LABEL org.opencontainers.image.description="Alpine image with pg_isready to wait for PostgreSQL"
+
 COPY --from=builder /usr/bin/pg_isready /usr/bin/pg_isready
 COPY --from=builder /usr/lib/libpq.so.5 /usr/lib/libpq.so.5
 
