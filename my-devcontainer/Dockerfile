@@ -45,4 +45,4 @@ RUN . /home/vscode/.nix-profile/etc/profile.d/nix.sh && \
 RUN nix-store --gc && nix-store --optimise
 
 COPY --chown=vscode:vscode zshrc.sh /tmp/zshrc.sh
-RUN /tmp/zshrc.sh && rm /tmp/zshrc.sh
+RUN chmod +x /tmp/zshrc.sh && /tmp/zshrc.sh && rm /tmp/zshrc.sh
