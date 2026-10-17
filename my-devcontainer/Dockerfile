@@ -7,7 +7,7 @@ ARG DEVBOX_VERSION=0.18.4
 # renovate: datasource=github-releases depName=go-task/task
 ARG GO_TASK_VERSION=3.53.1
 # renovate: datasource=github-releases depName=direnv/direnv
-ARG DIRENV_VERSION=2.37.1
+ARG DIRENV_VERSION=2.38.2
 ARG TARGETARCH
 
 LABEL devbox.version=${DEVBOX_VERSION} \
