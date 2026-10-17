@@ -5,7 +5,7 @@ ARG NIX_VERSION=2.35.2
 # renovate: datasource=github-releases depName=jetify-com/devbox
 ARG DEVBOX_VERSION=0.18.4
 # renovate: datasource=github-releases depName=go-task/task
-ARG GO_TASK_VERSION=3.53.1
+ARG GO_TASK_VERSION=3.54.0
 # renovate: datasource=github-releases depName=direnv/direnv
 ARG DIRENV_VERSION=2.37.1
 ARG TARGETARCH
