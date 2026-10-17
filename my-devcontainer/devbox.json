@@ -1,7 +1,0 @@
-{
-    "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.18.4/.schema/devbox.schema.json",
-    "packages": [
-        "direnv@2.37.1",
-        "go-task@3.53.1"
-    ]
-}

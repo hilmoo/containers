@@ -4,10 +4,26 @@ FROM mcr.microsoft.com/devcontainers/base:2.2.3-debian13
 ARG NIX_VERSION=2.35.2
 # renovate: datasource=github-releases depName=jetify-com/devbox
 ARG DEVBOX_VERSION=0.18.4
+# renovate: datasource=github-releases depName=go-task/task
+ARG GO_TASK_VERSION=3.53.1
+# renovate: datasource=github-releases depName=direnv/direnv
+ARG DIRENV_VERSION=2.37.1
+ARG TARGETARCH
 
 LABEL devbox.version=${DEVBOX_VERSION} \
     nix.version=${NIX_VERSION} \
-    org.opencontainers.image.description="Devcontainer with Nix ${NIX_VERSION} and Devbox ${DEVBOX_VERSION}"
+    go-task.version=${GO_TASK_VERSION} \
+    direnv.version=${DIRENV_VERSION} \
+    org.opencontainers.image.description="Devcontainer with Nix ${NIX_VERSION}, Devbox ${DEVBOX_VERSION}, go-task ${GO_TASK_VERSION} and direnv ${DIRENV_VERSION}"
+
+# Install devbox, go-task and direnv as static binaries
+RUN set -eux; \
+    curl -fsSL "https://github.com/jetify-com/devbox/releases/download/${DEVBOX_VERSION}/devbox_${DEVBOX_VERSION}_linux_${TARGETARCH}.tar.gz" \
+      | tar -xz -C /usr/local/bin devbox; \
+    curl -fsSL "https://github.com/go-task/task/releases/download/v${GO_TASK_VERSION}/task_linux_${TARGETARCH}.tar.gz" \
+      | tar -xz -C /usr/local/bin task; \
+    curl -fsSL -o /usr/local/bin/direnv "https://github.com/direnv/direnv/releases/download/v${DIRENV_VERSION}/direnv.linux-${TARGETARCH}"; \
+    chmod 0755 /usr/local/bin/devbox /usr/local/bin/direnv
 
 # Fix Nix seccomp BPF error under QEMU for multi-arch builds
 RUN mkdir -p /etc/nix && \
@@ -25,15 +41,5 @@ ENV PATH="/home/vscode/.nix-profile/bin:$PATH"
 
 RUN . /home/vscode/.nix-profile/etc/profile.d/nix.sh && \
     nix-channel --update
-
-# Install devbox
-RUN nix profile add github:jetify-com/devbox/${DEVBOX_VERSION} \
-    --extra-experimental-features flakes \
-    --extra-experimental-features nix-command
-
-COPY --chown=vscode:vscode devbox.json /home/vscode/.local/share/devbox/global/default/devbox.json
-
-RUN devbox global install
-RUN echo 'eval "$(devbox global shellenv)"' >> ~/.bashrc
 
 RUN nix-store --gc && nix-store --optimise
