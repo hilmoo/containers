@@ -19,7 +19,7 @@
             "description": "Auto-merge non-major updates once required checks pass",
             "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
             "automerge": true,
-            "platformAutomerge": false
+            "platformAutomerge": true
         },
         {
             "description": "Majors need a human",
