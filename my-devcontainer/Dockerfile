@@ -23,7 +23,7 @@ RUN set -eux; \
     curl -fsSL "https://github.com/go-task/task/releases/download/v${GO_TASK_VERSION}/task_linux_${TARGETARCH}.tar.gz" \
       | tar -xz -C /usr/local/bin task; \
     curl -fsSL -o /usr/local/bin/direnv "https://github.com/direnv/direnv/releases/download/v${DIRENV_VERSION}/direnv.linux-${TARGETARCH}"; \
-    chmod 0755 /usr/local/bin/devbox /usr/local/bin/direnv
+    chmod 0755 /usr/local/bin/devbox /usr/local/bin/task /usr/local/bin/direnv
 
 # Fix Nix seccomp BPF error under QEMU for multi-arch builds
 RUN mkdir -p /etc/nix && \
