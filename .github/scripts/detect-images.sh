@@ -22,7 +22,13 @@ case "$EVENT" in
     if [ -z "${BASE:-}" ] || [[ "$BASE" =~ ^0+$ ]] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
       images=$all
     else
-      images=$(git diff --name-only "$BASE" "$HEAD" | cut -d/ -f1 | sort -u | grep -Fx -f <(echo "$all") || true)
+      changed=$(git diff --name-only "$BASE" "$HEAD" | cut -d/ -f1 | sort -u)
+      # images built from another folder ("needs") are rebuilt when that folder changes
+      dependents=$(jq -r --argjson c "$(jq -R -s -c 'split("
+") | map(select(length > 0))' <<< "$changed")"         'to_entries[] | select(any(.value.needs[]?; . as $n | $c | index($n))) | .key' "$CONFIG")
+      images=$(printf '%s
+%s
+' "$changed" "$dependents" | sort -u | grep -Fx -f <(echo "$all") || true)
     fi
     ;;
 esac

@@ -35,6 +35,7 @@ jobs:
         id: cfg
         run: |
           echo "multiarch=$(jq -r --arg i '${{ inputs.image_name }}' '.[$i].multiarch // false' .github/images.json)" >> "$GITHUB_OUTPUT"
+          echo "devcontainer=$(jq -r --arg i '${{ inputs.image_name }}' '.[$i].devcontainer // false' .github/images.json)" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         if: steps.cfg.outputs.multiarch == 'true'
@@ -84,6 +85,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
+        if: steps.cfg.outputs.devcontainer != 'true'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: ./${{ inputs.image_name }}
@@ -94,3 +96,22 @@ jobs:
           labels: ${{ steps.labels.outputs.labels }}
           cache-from: type=gha,scope=${{ inputs.image_name }}
           cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}
+
+      # Images with "devcontainer": true are built with the official devcontainer CLI
+      # from <folder>/.devcontainer/devcontainer.json, so features end up baked into the image.
+      - name: Build and push devcontainer image
+        if: steps.cfg.outputs.devcontainer == 'true'
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          LABELS: ${{ steps.labels.outputs.labels }}
+          PLATFORM: ${{ steps.cfg.outputs.multiarch == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          PUSH: ${{ inputs.push }}
+        run: |
+          npm install -g @devcontainers/cli@0.89.0
+          args=(--workspace-folder "${{ inputs.image_name }}")
+          while read -r tag; do args+=(--image-name "$tag"); done <<< "$TAGS"
+          while read -r label; do [ -n "$label" ] && args+=(--label "$label"); done <<< "$LABELS"
+          if [ "$PUSH" = true ]; then
+            args+=(--platform "$PLATFORM" --push)
+          fi
+          devcontainer build "${args[@]}"

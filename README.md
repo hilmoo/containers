@@ -13,10 +13,12 @@ Nothing is triggered by hand. Renovate opens a PR, CI builds it, it auto-merges,
 
 Images are listed in [`.github/images.json`](.github/images.json). To add one, create the folder with a `Dockerfile` and add a line there.
 
+Images with `"devcontainer": true` (e.g. `my-devcontainer-dood`) are built with the official `devcontainer build` CLI from `<folder>/.devcontainer/devcontainer.json`, so devcontainer features are baked into the image. `"needs": [...]` lists folders whose changes also trigger a rebuild.
+
 ### Tags (`tag` mode in `images.json`)
 
 - `version`: the first `ARG *_VERSION=` in the Dockerfile, e.g. `2.11.4`. A rebuild at the same version becomes `2.11.4-1`, `2.11.4-2`, … Also pushes `2.11`, `2` and `latest`.
-- `date`: `YYYY.MM.DD` plus `latest` (used by `my-devcontainer`, which has too many deps for one version).
+- `date`: `YYYY.MM.DD` plus `latest` (used by `my-devcontainer` and `my-devcontainer-dood`, which have too many deps for one version).
 - `latest`: only `latest`.
 
 ### Renovate

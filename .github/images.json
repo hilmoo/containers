@@ -3,6 +3,7 @@
   "caddyl4": { "tag": "version" },
   "my-caddy": { "tag": "version" },
   "my-devcontainer": { "tag": "date", "multiarch": true },
+  "my-devcontainer-dood": { "tag": "date", "multiarch": true, "devcontainer": true, "needs": ["my-devcontainer"] },
   "my-rrrestic": { "tag": "version" },
   "wait-for-pg": { "tag": "latest", "schedule": true }
 }

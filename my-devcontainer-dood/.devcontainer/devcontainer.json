@@ -1,0 +1,13 @@
+{
+    "name": "my-devcontainer-dood",
+    "build": {
+        "dockerfile": "../../my-devcontainer/Dockerfile",
+        "context": "../../my-devcontainer"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+            "version": "latest",
+            "moby": false
+        }
+    }
+}

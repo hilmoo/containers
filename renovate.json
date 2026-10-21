@@ -43,6 +43,15 @@
             "matchStrings": [
                 "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\s+ARG \\w+_VERSION=\"?(?<currentValue>[^\\s\"]+)\"?"
             ]
+        },
+        {
+            "customType": "regex",
+            "description": "devcontainer CLI installed from npm in the build workflow",
+            "managerFilePatterns": ["/^\\.github/workflows/build\\.ya?ml$/"],
+            "matchStrings": [
+                "npm install -g (?<depName>@devcontainers/cli)@(?<currentValue>[^\\s\"]+)"
+            ],
+            "datasourceTemplate": "npm"
         }
     ]
 }
