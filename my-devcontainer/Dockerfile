@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/devcontainers/base:2.2.3-debian13
 # renovate: datasource=github-releases depName=NixOS/nix
 ARG NIX_VERSION=2.35.2
 # renovate: datasource=github-releases depName=jetify-com/devbox
-ARG DEVBOX_VERSION=0.18.4
+ARG DEVBOX_VERSION=0.18.5
 # renovate: datasource=github-releases depName=go-task/task
 ARG GO_TASK_VERSION=3.54.0
 # renovate: datasource=github-releases depName=direnv/direnv
