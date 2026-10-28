@@ -107,7 +107,7 @@ jobs:
           PLATFORM: ${{ steps.cfg.outputs.multiarch == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           PUSH: ${{ inputs.push }}
         run: |
-          npm install -g @devcontainers/cli@0.89.0
+          npm install -g @devcontainers/cli@0.90.0
           args=(--workspace-folder "${{ inputs.image_name }}")
           while read -r tag; do args+=(--image-name "$tag"); done <<< "$TAGS"
           while read -r label; do [ -n "$label" ] && args+=(--label "$label"); done <<< "$LABELS"
