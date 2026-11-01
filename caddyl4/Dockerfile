@@ -2,7 +2,7 @@
 ARG CADDY_VERSION=2.11.7
 
 # renovate-git: depName=https://github.com/mholt/caddy-l4 branch=master
-ARG CADDY_L4_COMMIT=f607ccea1b7dbe61cfcec089f2005621c61f7e6c
+ARG CADDY_L4_COMMIT=9cde2c19458aa8bcc2f899c10c5ca31a0164e538
 
 FROM caddy:${CADDY_VERSION}-builder-alpine AS builder
 
