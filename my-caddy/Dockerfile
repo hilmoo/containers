@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=caddy
-ARG CADDY_VERSION=2.11.8
+ARG CADDY_VERSION=2.11.9
 
 FROM caddy:${CADDY_VERSION}-builder-alpine AS builder
 
