@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=caddy
-ARG CADDY_VERSION=2.11.8
+ARG CADDY_VERSION=2.11.9
 
 # renovate: datasource=github-releases depName=mholt/caddy-l4
 ARG CADDY_L4_VERSION=v0.1.2
