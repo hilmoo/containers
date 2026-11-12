@@ -2,7 +2,7 @@
 ARG CADDY_VERSION=2.11.9
 
 # renovate: datasource=github-releases depName=mholt/caddy-l4
-ARG CADDY_L4_VERSION=v0.1.2
+ARG CADDY_L4_VERSION=v0.1.3
 
 FROM caddy:${CADDY_VERSION}-builder-alpine AS builder
 
